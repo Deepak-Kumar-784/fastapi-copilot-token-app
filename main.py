@@ -23,14 +23,28 @@ app = FastAPI(
 )
 
 # Templates directory
-templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
+templates = Jinja2Templates(
+    directory=os.path.join(os.path.dirname(__file__), "templates")
+)
 
 
 # ---------------------------
 # Pydantic models
 # ---------------------------
+# Copilot hint: generate a Pydantic model named `GenerateRequest` with a single field `text: str`.
 class TextOnly(BaseModel):
     text: str
+
+
+class GenerateRequest(BaseModel):
+    """Request model for the `/generate` endpoint."""
+
+    text: str
+
+
+class ChecksumResponse(BaseModel):
+    text: str
+    checksum: str
 
 
 class TokensResponse(BaseModel):
@@ -56,26 +70,71 @@ def _generate_tokens_from_text(text: str, count: int = 5) -> List[str]:
     return tokens
 
 
+def generate(text: str, count: int = 5) -> TokensResponse:
+    """Public generate function that returns tokens and checksum for given text.
+
+    This wrapper is intentionally small so it can be used by an endpoint
+    (and by tests) to produce the same output as `_generate_tokens_from_text`.
+    """
+    checksum = _checksum_md5(text)
+    tokens = _generate_tokens_from_text(text, count=count)
+    return TokensResponse(tokens=tokens, checksum=checksum)
+
+
 # ---------------------------
 # Routes / Endpoints
 # ---------------------------
 @app.get("/", summary="Welcome route")
 def welcome():
     participant_name = "Mallela Shaheena"
-    return {"message": f"Welcome to the Improvise Python App — built for {participant_name}"}
+    return {
+        "message": f"Welcome to the Improvise Python App — built for {participant_name}"
+    }
 
 
-@app.post("/checksum", response_model=dict, summary="Compute MD5 checksum of provided text")
+@app.post(
+    "/checksum",
+    response_model=ChecksumResponse,
+    summary="Compute MD5 checksum of provided text",
+)
 def checksum_endpoint(body: TextOnly):
+    """Compute MD5 checksum for the provided JSON `text` field.
+
+    Uses `ChecksumResponse` as the response model to provide explicit output
+    typing and avoid ambiguous response model warnings.
+    """
     cs = _checksum_md5(body.text)
-    return {"text": body.text, "checksum": cs}
+    return ChecksumResponse(text=body.text, checksum=cs)
 
 
-@app.post("/tokens", response_model=TokensResponse, summary="Generate list of tokens from text")
+@app.post(
+    "/tokens",
+    response_model=TokensResponse,
+    summary="Generate list of tokens from text",
+)
 def tokens_endpoint(body: TextOnly):
+    """Generate pseudorandom tokens from the provided text.
+
+    This legacy endpoint uses the internal helper function directly.
+    """
     checksum = _checksum_md5(body.text)
     tokens = _generate_tokens_from_text(body.text, count=5)
     return TokensResponse(tokens=tokens, checksum=checksum)
+
+
+# Copilot hint: create a FastAPI endpoint that accepts JSON and returns tokens + checksum.
+@app.post(
+    "/generate",
+    response_model=TokensResponse,
+    summary="Generate tokens and checksum from text",
+)
+def generate_endpoint(body: GenerateRequest):
+    """POST endpoint that accepts JSON payload `{"text": "..."}` and returns tokens + checksum.
+
+    This endpoint delegates to the public `generate()` function so business logic
+    stays testable and separate from request handling.
+    """
+    return generate(body.text)
 
 
 @app.get("/form", response_class=HTMLResponse, summary="Interactive HTML form")

@@ -3,22 +3,24 @@
 Repository name: `01-improvise-python-app-copilot`.
 
 ## What this project contains
-  
-  - `main.py` — FastAPI app with endpoints:
 
-  - `GET /` — welcome message
+- `main.py` — FastAPI app with endpoints:
 
-  - `POST /checksum` — accepts JSON `{"text": "..."}` and returns MD5 checksum
+- `GET /` — welcome message
 
-  - `POST /tokens` — accepts JSON `{"text": "..."}` and returns 5 pseudorandom tokens and checksum
+- `POST /checksum` — accepts JSON `{"text": "..."}` and returns MD5 checksum
 
-  - `GET /form` — interactive HTML form that calls `/tokens` and displays results
+- `POST /tokens` — accepts JSON `{"text": "..."}` and returns 5 pseudorandom tokens and checksum
+- `POST /tokens` — accepts JSON `{"text": "..."}` and returns 5 pseudorandom tokens and checksum
+- `POST /generate` — new endpoint: accepts JSON `{"text": "..."}` and returns tokens and checksum (delegates to `generate()`)
 
-  - `templates/form.html` — interactive form page
+- `GET /form` — interactive HTML form that calls `/tokens` and displays results
 
-  - `tests/test_main.py` — pytest test cases
+- `templates/form.html` — interactive form page
 
-  - `requirements.txt` — Python dependencies
+- `tests/test_main.py` — pytest test cases
+
+- `requirements.txt` — Python dependencies
 
 ## Run locally (or in Codespaces)
 
@@ -26,9 +28,9 @@ Repository name: `01-improvise-python-app-copilot`.
 
 python -m venv .venv
 
-source .venv/bin/activate   # macOS / Linux
-   
-.venv\Scripts\activate      # Windows
+source .venv/bin/activate # macOS / Linux
+
+.venv\Scripts\activate # Windows
 
 2.Install dependencies:
 
@@ -36,7 +38,17 @@ pip install -r requirements.txt
 
 3.Start the app with uvicorn:
 
+Run the development server with uvicorn:
+
+```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Or to run on Windows cmd / PowerShell (activate your virtualenv first):
+
+```powershell
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
 4. Visit:
 
@@ -46,8 +58,6 @@ Swagger UI / OpenAPI: http://localhost:8000/docs
 
 Redoc: http://localhost:8000/redoc
 
-# Run Locally #
+# Run Locally
 
 pytest -q
-
-

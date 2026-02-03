@@ -26,5 +26,19 @@ def test_tokens():
     assert r.status_code == 200
     data = r.json()
     assert "tokens" in data and isinstance(data["tokens"], list)
-    assert data.get("checksum") == hashlib.md5(payload["text"].encode("utf-8")).hexdigest()
+    assert (
+        data.get("checksum") == hashlib.md5(payload["text"].encode("utf-8")).hexdigest()
+    )
+    assert len(data["tokens"]) == 5
+
+
+def test_generate():
+    payload = {"text": "hello"}
+    r = client.post("/generate", json=payload)
+    assert r.status_code == 200
+    data = r.json()
+    assert "tokens" in data and isinstance(data["tokens"], list)
+    assert (
+        data.get("checksum") == hashlib.md5(payload["text"].encode("utf-8")).hexdigest()
+    )
     assert len(data["tokens"]) == 5
